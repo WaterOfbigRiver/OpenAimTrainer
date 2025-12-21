@@ -1,0 +1,106 @@
+[gd_scene load_steps=3 format=3 uid="uid://world2d_scene_uid"]
+
+[ext_resource type="Script" path="res://scripts/levels/World2D.gd" id="1_world2d"]
+[ext_resource type="Theme" uid="uid://bi8v7ieepi4ny" path="res://assets/themes/theme.tres" id="2_theme"]
+
+[node name="World2D" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_world2d")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.1, 0.1, 0.1, 1)
+
+[node name="TargetContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="Score" type="Label" parent="HUD"]
+offset_left = 50.0
+offset_top = 50.0
+offset_right = 200.0
+offset_bottom = 100.0
+theme = ExtResource("2_theme")
+theme_override_font_sizes/font_size = 32
+text = "Score: 0"
+
+[node name="Timer" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -200.0
+offset_top = 50.0
+offset_right = -50.0
+offset_bottom = 100.0
+grow_horizontal = 0
+theme = ExtResource("2_theme")
+theme_override_font_sizes/font_size = 32
+text = "60s"
+horizontal_alignment = 2
+
+[node name="GameTimer" type="Timer" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Pause" type="Control" parent="CanvasLayer"]
+visible = false
+process_mode = 2
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="CanvasLayer/Pause"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Pause"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -50.0
+offset_right = 100.0
+offset_bottom = 50.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ResumeButton" type="Button" parent="CanvasLayer/Pause/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_theme")
+text = "Resume"
+
+[node name="MenuButton" type="Button" parent="CanvasLayer/Pause/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_theme")
+text = "Main Menu"
+
+[connection signal="timeout" from="GameTimer" to="." method="_on_game_timer_timeout"]
+[connection signal="pressed" from="CanvasLayer/Pause/VBoxContainer/ResumeButton" to="." method="_on_resume_pressed"]
+[connection signal="pressed" from="CanvasLayer/Pause/VBoxContainer/MenuButton" to="." method="_on_menu_pressed"]

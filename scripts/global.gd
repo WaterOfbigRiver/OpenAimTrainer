@@ -73,5 +73,27 @@ var models3d: Dictionary = {
 	}
 }
 
+var models2d: Dictionary = {
+	"2D_GRIDSHOT_V1": {
+		"spawn_margin": 100, # Margin from edges
+		"size": 60, # Target size in pixels
+		"number_of_initial_targets": 3,
+		"duration": 60
+	},
+	"2D_REFLEX_V1": {
+		"spawn_margin": 100,
+		"size": 40,
+		"number_of_initial_targets": 1,
+		"duration": 60
+	},
+	"2D_MOVING_TARGETS_V1": {
+		"spawn_margin": 100,
+		"size": 40,
+		"number_of_initial_targets": 5,
+		"duration": 60,
+		"movement": true
+	}
+}
+
 
 var game_type = ""
