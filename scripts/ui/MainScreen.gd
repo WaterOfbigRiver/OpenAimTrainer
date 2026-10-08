@@ -24,6 +24,13 @@ const MIN_SENSITIVITY := 0.001
 const MAX_SENSITIVITY := 1000.0
 const DEFAULT_SENSITIVITY := 1.0
 
+# 右侧模式列表是“单选选中”：3D / 2D 各自记住当前选中项，
+# 启动时默认选中第一个；点「开始训练」才进入对应关卡
+var selected_mode_3d := ""
+var selected_mode_2d := ""
+var _mode_buttons_3d: Array[Button] = []
+var _mode_buttons_2d: Array[Button] = []
+
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -69,6 +76,11 @@ func _ready():
 	if DataManager.get_data("is_3d_mode") != null:
 		check_button.button_pressed = DataManager.get_data("is_3d_mode")
 		
+	# 2D 模式会隐藏渲染缩放 / 灵敏度 / 设置等行，左列随之收窄，
+	# 「开始训练」「退出」会被压短；这里固定左列最小宽度与 3D 布局一致
+	# （3840 设计基准下 3D 左列实测约 1240），保证两种模式下左列按钮等长
+	left_column.custom_minimum_size.x = 1250.0
+
 	# Initialize visibility
 	update_ui_visibility(check_button.button_pressed)
 		
@@ -117,7 +129,9 @@ func AddGames():
 		button.theme = load("res://assets/themes/theme.tres")
 		button.text = tr(model)
 		button.name = model
-		button.pressed.connect(startTraining.bind(button.name))
+		# 模式按钮是“单选选中”：点击只切换高亮，点「开始训练」才进关卡
+		button.toggle_mode = true
+		button.pressed.connect(_on_mode_button_pressed.bind(button, true))
 		
 
 
@@ -137,14 +151,44 @@ func AddGames():
 		gamelist.add_child(hboxc)
 		mode_buttons.append(button)
 
+	_mode_buttons_3d = mode_buttons
+	if selected_mode_3d.is_empty() or not Global.models3d.has(selected_mode_3d):
+		selected_mode_3d = Global.models3d.keys()[0]
+	_apply_mode_selection(mode_buttons, selected_mode_3d)
+
+	# 按钮是动态创建的，切换 3D/2D 重建后必须重新套高对比样式，
+	# 否则选中态（按下态）几乎看不出来
+	UIStyle.apply_controls(gamelist)
+
 	# 等布局稳定后统一按钮宽度，并让右侧列表总高对齐左侧控制列
 	sync_mode_layout.call_deferred(mode_buttons)
+
+
+# 模式按钮单选：点击只更新选中态（按下态高亮），不进入关卡
+func _on_mode_button_pressed(button: Button, is_3d: bool) -> void:
+	var buttons: Array[Button] = _mode_buttons_3d if is_3d else _mode_buttons_2d
+	if is_3d:
+		selected_mode_3d = String(button.name)
+	else:
+		selected_mode_2d = String(button.name)
+	_apply_mode_selection(buttons, String(button.name))
+
+
+# 让列表中只有 mode_name 对应的按钮处于按下（选中）态
+func _apply_mode_selection(buttons: Array[Button], mode_name: String) -> void:
+	for b in buttons:
+		if is_instance_valid(b):
+			b.set_pressed_no_signal(b.name == mode_name)
 
 
 # 依赖真实布局的宽度统一与左右列高度对齐统一放到这里（等一帧后再算）。
 # 字体（尤其 CJK 回退字体）异步加载会让左列高度变化，
 # 因此监听 left_column.resized 自动重算，保证两边始终等高。
 var _last_mode_buttons: Array[Button] = []
+# 跨 3D / 2D 两组模式按钮统一的尺寸：两组各自取最宽/最高者生效，
+# 保证切换 3D↔2D 时按钮长宽完全一致（右边列对齐）
+var _unified_button_size := Vector2.ZERO
+var _sync_retries := 0
 
 
 func sync_mode_layout(buttons: Array[Button]) -> void:
@@ -153,20 +197,39 @@ func sync_mode_layout(buttons: Array[Button]) -> void:
 	var rows := gamelist.get_children()
 	var target := left_column.size.y
 	if rows.is_empty() or target <= 0.0:
+		# 布局尚未就绪（首帧左列还没有尺寸）：下一帧重试而不是放弃，
+		# 否则宽度统一永远不会执行（按钮恢复成各自文字的自然宽度、长短不一）
+		_sync_retries += 1
+		if _sync_retries < 30:
+			sync_mode_layout.call_deferred(buttons)
 		return
+	_sync_retries = 0
 
-	# 宽度：取所有按钮最宽的自然宽度，再放宽 10%
+	# 宽度：用主题探测按钮测量 3D + 2D 全部模式名的自然宽度，取最宽者 ×1.1。
+	# 两组共用同一基准，保证冷启动直接进 2D / 3D、或运行时互相切换，
+	# 按钮宽度都完全一致（不随当前显示的是哪组文字变长变短）。
+	# 探测按钮必须挂进场景树（隐藏），否则拿不到项目主题的字体回退，测出来会偏窄
+	var probe := Button.new()
+	probe.theme = load("res://assets/themes/theme.tres")
+	UIStyle.apply_controls(probe)  # 与真实按钮同款 stylebox（含左右 40px 边距），宽度才一致
+	probe.visible = false
+	gamelist.add_child(probe)
 	var width := 0.0
-	for b in buttons:
-		if is_instance_valid(b):
-			width = maxf(width, b.get_combined_minimum_size().x)
-	width *= 1.1
+	for mode_name: String in Global.models3d.keys() + Global.models2d.keys():
+		probe.text = tr(mode_name)
+		width = maxf(width, probe.get_combined_minimum_size().x)
+	probe.queue_free()
+	width = maxf(width * 1.1, _unified_button_size.x)
 
-	# 高度：右侧行总高 ≈ 左侧控制列高度；
-	# 按钮几乎撑满行高（上下各留 12px），让两边上下边缘对齐
+	# 高度：右侧行总高 ≈ 左侧控制列高度；按钮几乎撑满行高（上下各留 12px）。
+	# 行高下限 300（= 预览完整尺寸）：2D 模式会隐藏左列的灵敏度 / 设置 /
+	# 渲染缩放等行，左列变矮；若跟着左列把行高压到 300 以下，
+	# 预览会被裁剪、按钮挤成一条，观感与 3D 不一致。
+	# 按钮高度同样与另一组（3D/2D）取大者统一
 	var sep := float(gamelist.get_theme_constant("separation"))
-	var row_h := maxf(140.0, (target - sep * (rows.size() - 1)) / float(rows.size()))
-	var button_h := clampf(row_h - 24.0, 120.0, row_h)
+	var row_h := maxf(300.0, (target - sep * (rows.size() - 1)) / float(rows.size()))
+	var button_h := maxf(clampf(row_h - 24.0, 120.0, row_h), _unified_button_size.y)
+	_unified_button_size = Vector2(width, button_h)
 
 	for row in rows:
 		if row.get_child_count() < 2:
@@ -199,23 +262,13 @@ func update_resolution_label() -> void:
 			round(get_viewport().scaling_3d_scale * 100)]
 
 
+# 「开始训练」进入当前选中的模式；模式列表启动时已默认选中第一个，
+# 因此任何时候点击都有明确目标（不再随机抽取）
 func _on_play_pressed():
 	if check_button.button_pressed:
-		var keys = []
-		for key in Global.models3d.keys():
-			keys.push_back(key)
-		
-		var random_index = randi() % keys.size()
-		var value = keys[random_index]
-		startTraining(value)
+		startTraining(selected_mode_3d)
 	else:
-		var keys = []
-		for key in Global.models2d.keys():
-			keys.push_back(key)
-			
-		var random_index = randi() % keys.size()
-		var value = keys[random_index]
-		startTraining2D(value)
+		startTraining2D(selected_mode_2d)
 
 
 func _on_quality_slider_value_changed(value: float) -> void:
@@ -324,7 +377,8 @@ func AddGames2D():
 		button.theme = load("res://assets/themes/theme.tres")
 		button.text = tr(model)
 		button.name = model
-		button.pressed.connect(startTraining2D.bind(button.name))
+		button.toggle_mode = true
+		button.pressed.connect(_on_mode_button_pressed.bind(button, false))
 
 		var preview = ModePreview2D.instantiate()
 		preview.setup_scene(model, Global.models2d[model])
@@ -341,6 +395,14 @@ func AddGames2D():
 		hboxc.add_child(button)
 		gamelist.add_child(hboxc)
 		mode_buttons.append(button)
+
+	_mode_buttons_2d = mode_buttons
+	if selected_mode_2d.is_empty() or not Global.models2d.has(selected_mode_2d):
+		selected_mode_2d = Global.models2d.keys()[0]
+	_apply_mode_selection(mode_buttons, selected_mode_2d)
+
+	# 与 3D 保持一致：重建后重新套高对比样式，保证选中态可见
+	UIStyle.apply_controls(gamelist)
 
 	# 与 3D 保持一致：等布局稳定后统一宽度并对齐左右列高度
 	sync_mode_layout.call_deferred(mode_buttons)

@@ -85,7 +85,8 @@ func _ready():
 		putLabel(put_label)
 	# 全部控件就位后再统一外观：按钮/输入框要有明显的底色与描边，
 	# 悬停、按下、勾选态用高对比蓝色，避免被当成纯文本
-	UIStyle.apply_controls($ScrollContainer)
+	# 根节点整棵树套样式（「返回」按钮固定在视口右下角、不在 ScrollContainer 下）
+	UIStyle.apply_controls(self)
 	style_option_texts()
 	compact_color_buttons()
 

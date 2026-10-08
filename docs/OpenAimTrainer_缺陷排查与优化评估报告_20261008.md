@@ -7,12 +7,14 @@
 | 最后更新 | 2026-10-08（UTC+8，第五轮后） |
 | 分析对象 | OpenAimTrainer-main（Godot 4.7 项目，Apache-2.0） |
 | 验证环境 | Godot v4.7.stable.win64（`K:\Godot_v4.7-stable_win64\Godot.exe`）、Windows、headless 冒烟 + 实际试玩 |
-| 本次结论 | 累计定位 **43 项缺陷**（D01–D43）；**36 项已修复**（含全部 4 项 P0 阻断级、全部影响体验项），**7 项为工程规范 / 素材类建议**；**本地化已扩至 15 语并通过抽样验证（58 键 × 15 语）** |
+| 本次结论 | 累计定位 **46 项缺陷**（D01–D46）；**39 项已修复**（含全部 4 项 P0 阻断级、全部影响体验项），**7 项为工程规范 / 素材类建议**；**本地化已扩至 15 语并通过抽样验证（58 键 × 15 语）** |
 | 第一轮 | 静态审计 + 无头冒烟：P0 阻断 4 项、手感与数据 8 项、工程规范 12 项（D01–D24），并落地汉化 |
 | 第二轮 | 依据实际试玩反馈，追加修复弹道散布、全屏二次弹窗、2D 靶过小、结算重开、成绩记录、结算按钮失灵等 6 项（D25–D30） |
 | 第三轮 | 语言下拉与实际语言不同步、画质滑条看不清、没有窗口模式等 6 项（D31–D36） |
 | 第四轮 | 滑条信号失效、窗口尺寸不生效、滑条过长档位过细等 3 项（D34 / D37 / D38） |
 | 第五轮 | 语言扩容至 15 种、游戏显示名随语言、模式按钮厚度与等宽、左右两列等高对齐，以及由此引入的脚本解析错误修复（D39–D43） |
+| 第六轮 | 数值输入校验、导入 / 读档健壮性增强、模式按钮改单选选中（D44–D46） |
+| 第七轮 | 2D 主菜单与 3D 观感对齐：按钮样式与选中态、行高与预览可见性、按钮跨维度统一宽度、左列按钮长度；设置页「返回」移到右下角（D47–D50） |
 | 进度明细 | 见 `OpenAimTrainer_优化进度记录_20261008.md` |
 
 ---
@@ -100,10 +102,14 @@ func check_distance():
 | D22 | 窗口失焦自动暂停**仅 3D 有**（`Pause.gd`），2D 缺失 | `scenes/levels/World2D.tscn` | ✅ 已修复（`World2D._notification()` 监听 `FOCUS_OUT`） |
 | D23 | 导入/导出对话框 `current_dir = "/"`，Windows 下落到盘符根目录 | `Options.gd:341/351` | ✅ 已修复（新增 `default_save_dir()`，优先 `SYSTEM_DIR_DOCUMENTS`，取不到退回桌面 / `user://`） |
 | D24 | 主菜单灵敏度区**没有任何文字标签**（只有下拉框和输入框） | `MainScreen.tscn` | ✅ 已修复（新增 `Game` / `Sensitivity` 标签，已加翻译） |
-| D39 | 灵敏度 / 准星尺寸输入框直接 `float(new_text)`：空串、字母、中文全角标点（`0，5`）都会静默解析成 **0.0 并落盘**，表现为"视角完全不动""准星整块消失"，且**重启后仍是 0** | `MainScreen.gd` / `Options.gd` | ✅ 已修复（新增 `Global.parse_number()` / `parse_number_clamped()`：全角数字与 `。，、` 归一化，解析失败回退上一次有效值；灵敏度夹在 `0.001 ~ 1000`，启动时发现存档为 0 自动恢复默认 `1.0`） |
+| D44 | 灵敏度 / 准星尺寸输入框直接 `float(new_text)`：空串、字母、中文全角标点（`0，5`）都会静默解析成 **0.0 并落盘**，表现为"视角完全不动""准星整块消失"，且**重启后仍是 0** | `MainScreen.gd` / `Options.gd` | ✅ 已修复（新增 `Global.parse_number()` / `parse_number_clamped()`：全角数字与 `。，、` 归一化，解析失败回退上一次有效值；灵敏度夹在 `0.001 ~ 1000`，启动时发现存档为 0 自动恢复默认 `1.0`） |
 
-| D40 | 导入 / 读取到非 JSON 或格式不对的文件时，`load_all_data()` 用空字典顶替，紧接着 `save_all_data()` 把空设置写回 `user://`——**语言、显示、灵敏度、准星、成绩记录一次性全丢且不可逆**；Web 端 `file_parser()` 同样会清空 | `DataManager.gd` / `Options.gd` | ✅ 已修复（新增 `parse_game_data()`：解析失败或结果非 `Dictionary` 返回 `null`；`load_all_data()` / `load_all_data_from_param()` 返回 `false` 且**保留现有设置**；导入只在成功时落盘；存档损坏时先备份为 `.bak`） |
-| D41 | `save_data()` / `save_all_data()` 未判 `FileAccess.open()` 返回 null，写盘失败（无权限 / 路径不存在）时直接崩溃 | `DataManager.gd` | ✅ 已修复（统一走 `write_all_data()`，打开失败返回 `false` 并 `push_error`，不再崩溃） |
+| D45 | 导入 / 读取到非 JSON 或格式不对的文件时，`load_all_data()` 用空字典顶替，紧接着 `save_all_data()` 把空设置写回 `user://`——**语言、显示、灵敏度、准星、成绩记录一次性全丢且不可逆**；Web 端 `file_parser()` 同样会清空 | `DataManager.gd` / `Options.gd` | ✅ 已修复（新增 `parse_game_data()`：解析失败或结果非 `Dictionary` 返回 `null`；`load_all_data()` / `load_all_data_from_param()` 返回 `false` 且**保留现有设置**；导入只在成功时落盘；存档损坏时先备份为 `.bak`） |
+| D46 | `save_data()` / `save_all_data()` 未判 `FileAccess.open()` 返回 null，写盘失败（无权限 / 路径不存在）时直接崩溃 | `DataManager.gd` | ✅ 已修复（统一走 `write_all_data()`，打开失败返回 `false` 并 `push_error`，不再崩溃） |
+| D47 | 切到 2D 模式后按钮**没有高对比样式、选中态几乎看不见**（回到默认黑底主题） | `MainScreen.gd` | ✅ 已修复（`AddGames()` / `AddGames2D()` 重建列表后统一 `UIStyle.apply_controls(gamelist)`，运行时切换与启动时观感一致） |
+| D48 | 2D 模式下模式列表**行被压扁、预览被裁剪**（300×300 预览挤成一条），且预览 `transparent_bg` + 白色小靶点在主菜单背景上**几乎看不见** | `MainScreen.gd: sync_mode_layout()` / `ModePreview2D.tscn` | ✅ 已修复（行高下限 140 → 300，不再随左列变矮而压缩；2D 预览加 `Color(0.1,0.1,0.1)` 深色背景，与 3D 预览观感一致） |
+| D49 | 模式按钮**长短不一**：3D 组内第一个按钮偏窄，且 2D 与 3D 按钮宽度不同 | `MainScreen.gd: sync_mode_layout()` | ✅ 已修复（① 布局未就绪（左列尺寸仍为 0）时下一帧重试而不是直接 `return`，否则宽度统一永不执行；② 用**挂进场景树的探测按钮**测量 3D+2D 全部模式名，取统一宽度，不再按各组文字分别测、也不再对上次结果反复 ×1.1 累乘） |
+| D50 | 2D 模式下左列「开始训练 / 退出」被压短（3D 下由 900px 最小宽的画质滑条撑开，2D 隐藏这些行后左列收窄） | `MainScreen.gd: _ready()` | ✅ 已修复（左列固定最小宽度 `1250`，与 3D 布局实测宽度一致，两种模式下左列按钮等长） |
 
 ### 3.4 第二 ~ 五轮补充定位的体验缺陷（D25–D38，均已修复）
 
@@ -202,14 +208,14 @@ func check_distance():
 
 ## 五、优化路线图
 
-> Phase 1 的稳定性与体验项（D09 / D11 / D12 / D13 / D22 / **D14 / D23 / D20 / D39**）已全部完成，以下为剩余计划。
+> Phase 1 的稳定性与体验项（D09 / D11 / D12 / D13 / D22 / **D14 / D23 / D20 / D44**）已全部完成，以下为剩余计划。
 
 ### Phase 1（✅ 已完成）
 
 1. ✅ **D14 字段名**：`movment` → `movement`，统一 2D / 3D 配置键（`World.gd` 同步改用 `get("movement", false)` 兜底）。
 2. ✅ **D23 导出目录**：`FileDialog.current_dir` 改用 `OS.get_system_dir(OS.SYSTEM_DIR_DOCUMENTS)`。
 3. ✅ **D20 准星缓存**：`Crosshair` 参数只在 `_ready()` / 设置变更时加载，`_draw()` 仅做懒加载兜底；描边直接用点数组绘制，不再每帧 `new Polygon2D()`。
-4. ✅ **D39 数值输入校验**：灵敏度与准星尺寸改走 `Global.parse_number()` / `parse_number_clamped()`，空串 / 非法字符 / 中文全角标点不再静默写 0。
+4. ✅ **D44 数值输入校验**：灵敏度与准星尺寸改走 `Global.parse_number()` / `parse_number_clamped()`，空串 / 非法字符 / 中文全角标点不再静默写 0。
 
 ### Phase 2（约 2–3 天，训练闭环）
 
@@ -340,5 +346,5 @@ vi     Bắt đầu luyện tập Counter-Strike (CS)  Mẹo: nhấn F để chu
 ---
 
 *报告生成时间：2026-10-08 19:33 · 最后更新：2026-10-08（UTC+8，第五轮：15 语言 / 游戏名本地化 / 首页布局 / 文档补全后） · 分析对象：OpenAimTrainer-main（Godot 4.7 / Apache-2.0）*
-*缺陷计数：累计 **43 项**（D01–D43），**36 项已修复**，7 项为工程规范 / 素材类建议*
+*缺陷计数：累计 **46 项**（D01–D46），**39 项已修复**，7 项为工程规范 / 素材类建议*
 *配套文档：`OpenAimTrainer_项目分析报告_20261008.md`（说明）、`OpenAimTrainer_优化进度记录_20261008.md`（进度）、`OpenAimTrainer_使用说明.md`（帮助手册）*

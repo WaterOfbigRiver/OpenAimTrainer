@@ -125,7 +125,7 @@ OpenAimTrainer-main/
         ┌─────────────┐
         │ MainScreen  │◄──────────────┐
         └──────┬──────┘               │ Back / Menu
-   PLAY(随机) │  或点击模式按钮        │
+   PLAY(进选中模式)│ 点击模式按钮=选中     │
              ▼                        │
    ┌───────────────────┐        ┌─────┴──────┐
    │ 3D → World.tscn   │        │  Options   │
@@ -222,7 +222,7 @@ Options ──signal refresh_crosshair──► Crosshair._on_options_refresh_cr
 - **灵敏度区**：`OptionButton`（游戏）× `LineEdit`（用户灵敏度）→ 实时写入存档，并带 `Game` / `Sensitivity` 文字标签。
 - **渲染缩放滑块**：`QualityRow = [HSlider, QualityValue]`。档位 **0.5 / 0.75 / 1.0 / 1.25 / 1.5 / 1.75 / 2.0**（步长 0.25，`tick_count = 7`），改 `viewport.scaling_3d_scale`，右侧实时显示百分比，上方标签显示 `渲染缩放：W × H (N%)`。样式由 `style_quality_slider()` 用高对比 `StyleBoxFlat` 显式指定。
 - **F 键**：`_input()` 监听 `f_pressed` → `Global.toggle_fullscreen()`（输入框有焦点时不拦截）。
-- **PLAY**：从当前维度（3D/2D）的模式集合中**随机抽取**一个模式——主打"随机训练"。
+- **PLAY**：进入当前维度（3D/2D）中**已选中**的模式。模式按钮为单选（`toggle_mode` + `set_pressed_no_signal` 维护唯一选中态），启动时默认选中第一个，3D / 2D 各自记忆上次选择；点击模式按钮不再直接进关卡。
 - **平台适配**：Web 下隐藏 `Exit`、渲染缩放行与分辨率标签（浏览器无法控制）。
 
 ### 5.4 Options（设置页）
@@ -383,7 +383,7 @@ mouse_sensitivity(弧度/像素)
 
 ```
 主菜单（可选：设置显示模式 / 窗口大小 / 语言 / 准星）
-   → 选/随机模式 → 进入关卡
+   → 选中模式 → 「开始训练」进入关卡
    → [鼠标捕获守卫] 点击一次即锁定鼠标（窗口 / 全屏均可）→ 开始
    → 60s 内尽可能多地命中（击杀数↑ / Score↑）
    → 时间到 → 结算面板（击杀 / 得分 ｜ 命中率 ｜ 历史最佳）
@@ -414,6 +414,7 @@ mouse_sensitivity(弧度/像素)
 | 游戏下拉框显示英文名、不熟悉 | ✅ 显示名随语言（`GAME_*` 键），内部 key 走 metadata |
 | 模式按钮被预览容器拉成厚框 | ✅ `SIZE_SHRINK_CENTER` + 统一高度 |
 | 右侧模式列表与左列不等高、按钮长短不一 | ✅ `sync_mode_layout()` 等宽 + 按左列高度均分行高 + `resized` 自动重算 |
+| 2D 模式下按钮无选中高亮、行被压扁、预览看不见、左右列与 3D 不一致 | ✅ 重建列表后重新套 `UIStyle`；行高下限 300；2D 预览加深色背景；跨 3D/2D 统一按钮宽度；左列固定最小宽 1250（D47–D50） |
 
 ### 8.2 剩余技术债（不影响可玩性）
 
@@ -422,7 +423,7 @@ mouse_sensitivity(弧度/像素)
 | 中 | 配置字段名 `movment`（3D）与 `movement`（2D）不一致 | `global.gd` | ✅ 已修复（统一为 `movement`，`World.gd` 加 `get()` 兜底） |
 | 中 | 导入/导出对话框 `current_dir = "/"`，Windows 下落到盘符根目录 | `Options.gd` | ✅ 已修复（`default_save_dir()` 用系统文档目录） |
 | 中 | `Crosshair._draw()` 每次重绘都全量 `loadSave()`（且每帧 `new Polygon2D()`） | `Crosshair.gd` | ✅ 已修复（参数缓存 + 描边直接用点数组绘制） |
-| 中 | 灵敏度 / 准星尺寸输入框直接 `float()`，非法输入静默写 0 | `MainScreen.gd` / `Options.gd` | ✅ 已修复（D39：`parse_number()` 归一化 + 回退上一次有效值） |
+| 中 | 灵敏度 / 准星尺寸输入框直接 `float()`，非法输入静默写 0 | `MainScreen.gd` / `Options.gd` | ✅ 已修复（D44：`parse_number()` 归一化 + 回退上一次有效值） |
 | 低 | 无命中 / 结算音效（README 提到的 `assets/sounds` 不存在） | — | Phase 2 |
 | 低 | 2D 模式无自定义准星、灵敏度不生效 | 设计取舍 | Phase 2 |
 | 低 | `Target2D.tscn` 使用占位 uid、无贴图 | `scenes/characters/Target2D.tscn` | Phase 3 |

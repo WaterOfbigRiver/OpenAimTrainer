@@ -8,7 +8,7 @@
 | 工作时段 | 2026-10-08 19:33 – 20:45（S0–S5）＋ 同日追加 S6–S8 |
 | 验证环境 | Godot v4.7.stable.win64（`K:\Godot_v4.7-stable_win64\Godot.exe`）、Windows、headless 冒烟 + 实际试玩 |
 | 当前状态 | **可玩**：P0 阻断项全部清除，本地化 **15 语 × 58 键**，游戏名随语言显示，首页左右两列等高对齐，3D / 2D 均有结算与成绩记录 |
-| 缺陷计数 | 累计定位 **43 项**（D01–D43）；**36 项已修复**；**7 项为工程规范 / 素材类建议**（D14 / D17 / D18 / D19 / D20 / D21 / D23） |
+| 缺陷计数 | 累计定位 **46 项**（D01–D46）；**39 项已修复**；**7 项为工程规范 / 素材类建议**（D14 / D17 / D18 / D19 / D20 / D21 / D23） |
 | 关联文档 | `OpenAimTrainer_使用说明.md`（帮助手册）、`OpenAimTrainer_项目分析报告_20261008.md`、`OpenAimTrainer_缺陷排查与优化评估报告_20261008.md`、`OpenAimTrainer_模块架构报告_20261008.md` |
 
 ---
@@ -26,6 +26,8 @@
 | **S6 多语言扩容** | 同日追加 | 用户：语言扩到 15 种 | CSV 扩至 15 列 × 58 键；`LOCALES` / `LOCALE_NAMES` / `locale_to_index()`；`project.godot` 与 `.import` 登记 15 个产物；headless `--import` 重新生成（D39） | ✅ 完成 |
 | **S7 游戏名本地化 + 首页布局** | 同日追加 | 用户：游戏名看不懂 / 按钮太厚 / 左右不等高 | `GAME_TR_KEYS` + `game_display_name()`（metadata 保 key）；按钮 `SIZE_SHRINK_CENTER`；`sync_mode_layout()` 等宽 + 按左列高度均分行高（D40 / D41 / D42） | ✅ 完成 |
 | **S8 修复回归 + 文档补全** | 同日追加 | 用户：改完首页失效 / 更新全部文档 | `@onready` 显式 `VBoxContainer` 类型修复 `Parse Error`（D43）；`build_translations.gd` 改为按 CSV 表头动态输出；README 新增帮助章节 + 新增 `docs/OpenAimTrainer_使用说明.md`；四份旧文档同步 | ✅ 完成 |
+| **S9 输入校验 + 存档健壮性 + 模式选中** | 10-09 | 用户：数值输错被归 0 / 导入会丢设置 / 模式按钮点了直接进游戏 | `parse_number()` 归一化与回退（D44）；`parse_game_data()` + `write_all_data()` 判空 + `.bak` 备份（D45 / D46）；模式按钮改单选选中（默认第一个），「开始训练」进入选中模式 | ✅ 完成 |
+| **S10 2D 主菜单与 3D 观感对齐** | 10-09 | 用户：2D 下按钮无选中高亮 / 排版被压扁 / 按钮长短不一 / 左列按钮变短 | 重建列表后重新套 `UIStyle`（D47）；行高下限 300 + 2D 预览深色背景（D48）；跨 3D/2D 统一按钮宽度 + 布局未就绪重试（D49）；左列固定最小宽 1250（D50）；设置页「返回」移到视口右下角、宽度缩至 1/4 | ✅ 完成 |
 
 ---
 
@@ -97,6 +99,14 @@
 
 ---
 
+### S9 · 第六轮：输入校验、存档健壮性与模式选中交互（D44–D46）
+
+| 时间 | 反馈 | 处理 |
+| --- | --- | --- |
+| 10-09 | 灵敏度 / 准星尺寸输错（空串、全角标点）会静默存 0 | `Global.parse_number()` / `parse_number_clamped()` 归一化 + 回退上一次有效值；存档为 0 时启动自动恢复默认（D44） |
+| 10-09 | 导入损坏 JSON 会清空并覆盖存档；写盘失败直接崩溃 | `parse_game_data()` 校验，失败保留设置；`write_all_data()` 判空；损坏存档备份为 `.bak`（D45 / D46） |
+| 10-09 | 模式按钮点击直接进游戏，「开始训练」形同虚设 | 模式按钮改单选选中（`toggle_mode`，默认选中第一个，3D/2D 各自记忆），「开始训练」进入当前选中模式 |
+
 ## 三、累计改动文件清单
 
 | 文件 | 变更类型 | 说明 |
@@ -121,7 +131,7 @@
 | `assets/text/translations.csv.import` | 修改 | `dest_files` 登记 15 个产物 |
 | `tools/build_translations.gd` | **新增 / 修改** | CSV → `.translation` 编译脚本；输出语言改为由 CSV 表头动态决定 |
 | `scripts/global.gd` | 修改 | 新增 `GAME_TR_KEYS` + `game_display_name()`（游戏显示名随语言） |
-| `scripts/ui/MainScreen.gd` | 修改 | 游戏下拉框 metadata 保 key；模式按钮厚度 / 等宽；`sync_mode_layout()` + `_on_left_column_resized()`；`@onready` 显式类型 |
+| `scripts/ui/MainScreen.gd` | 修改 | 游戏下拉框 metadata 保 key；模式按钮厚度 / 等宽；`sync_mode_layout()` + `_on_left_column_resized()`；`@onready` 显式类型；模式按钮改单选选中（`_on_mode_button_pressed()` / `_apply_mode_selection()`），「开始训练」进入选中模式 |
 | `scripts/ui/Options.gd` | 修改 | `LOCALES` 15 项 + `LOCALE_NAMES` + `locale_to_index()` |
 | `project.godot` | 修改 | 注册 15 个翻译资源；`locale/fallback="en"` |
 | `README.md` | 修改 | 新增「帮助文档」章节（设置 / 效果 / 玩法 / 快捷键 / 排错）+ 目录与构建说明同步 |
@@ -146,8 +156,9 @@
 | S7 | 布局采样脚本（第 5 / 15 / 40 帧） | `left=1248 right=1248`，按钮等宽、上下边缘各留 12px |
 | S7 | 3D ↔ 2D 反复切换 | 列表正确重建（4 / 3 项），无残留行、无脚本报错 |
 | S8 | `godot --headless --path . --quit-after 200` | 无 `SCRIPT ERROR` / `Parse Error`（D43 修复复核） |
-| S9 | 静态断言脚本（19 项）+ `MainScreen` / `Options` / `World` 三场景 `--headless --quit-after` | 19/19 PASS，三场景均无 `SCRIPT ERROR` / `Parse Error`（D14 / D20 / D23 / D39 修复复核） |
-| S10 | `DataManager` 解析 / 导入健壮性断言（17 项）+ 主场景 `--headless --quit-after 120` | 17/17 PASS（含"损坏导入保留设置"），主场景无报错（D40 / D41 修复复核） |
+| S9 | 静态断言脚本（19 项）+ `MainScreen` / `Options` / `World` 三场景 `--headless --quit-after` | 19/19 PASS，三场景均无 `SCRIPT ERROR` / `Parse Error`（D14 / D20 / D23 / D44 修复复核） |
+| S10 | `DataManager` 解析 / 导入健壮性断言（17 项）+ 主场景 `--headless --quit-after 120` | 17/17 PASS（含"损坏导入保留设置"），主场景无报错（D45 / D46 修复复核） |
+| S11 | `MainScreen` / `Options` / `World` / `World2D` 四场景 `--headless --quit-after` + Godot Movie Maker 实际渲染帧 | 四场景均无 `SCRIPT ERROR` / `Parse Error`；渲染帧确认 2D 与 3D 左列按钮等长、模式按钮等宽等高、预览完整、设置页「返回」位于右下角（D47–D50 复核） |
 
 ---
 
@@ -158,9 +169,14 @@
 | P1 | D14 | ✅ 配置字段名 `movment` → `movement`，统一 2D / 3D（`World.gd` 加 `get()` 兜底） | 已完成 2026-10-08 |
 | P1 | D23 | ✅ 导入/导出 `FileDialog.current_dir` 改用 `default_save_dir()`（系统文档目录） | 已完成 2026-10-08 |
 | P1 | D20 | ✅ `Crosshair` 参数缓存 + 去掉每帧 `new Polygon2D()` | 已完成 2026-10-08 |
-| P1 | D39 | ✅ 灵敏度 / 准星尺寸输入校验，非法输入不再写 0 | 已完成 2026-10-08 |
-| P1 | D40 | ✅ 导入 / 读取损坏 JSON 不再清空覆盖存档（失败保留设置；损坏时备份 `.bak`） | 已完成 2026-10-09 |
-| P1 | D41 | ✅ `save_data` / `save_all_data` 写盘失败不再崩溃（判空 + 返回 false） | 已完成 2026-10-09 |
+| P1 | D44 | ✅ 灵敏度 / 准星尺寸输入校验，非法输入不再写 0 | 已完成 2026-10-08 |
+| P1 | D45 | ✅ 导入 / 读取损坏 JSON 不再清空覆盖存档（失败保留设置；损坏时备份 `.bak`） | 已完成 2026-10-09 |
+| P1 | D46 | ✅ `save_data` / `save_all_data` 写盘失败不再崩溃（判空 + 返回 false） | 已完成 2026-10-09 |
+| P1 | D47 | ✅ 2D 模式按钮样式 / 选中态与 3D 一致（重建后重新套 `UIStyle`） | 已完成 2026-10-09 |
+| P1 | D48 | ✅ 2D 列表行高不再被压扁（下限 300）+ 2D 预览加深色背景 | 已完成 2026-10-09 |
+| P1 | D49 | ✅ 模式按钮宽度统一（3D 组内 + 2D/3D 跨维度），布局未就绪时重试 | 已完成 2026-10-09 |
+| P1 | D50 | ✅ 2D 左列按钮不再被压短（左列固定最小宽 1250） | 已完成 2026-10-09 |
+| P2 | — | ✅ 设置页「返回」移至视口右下角，宽度缩至 1/4 | 已完成 2026-10-09 |
 | P2 | D17 | 命中 / 结算 / UI 音效 + 音量设置 | Phase 2（约 2–3 天） |
 | P2 | D21 | 2D 模式准星与灵敏度 | Phase 2 |
 | P2 | — | 成绩扩展：时间序列、近 10 次曲线、本轮 vs 最佳 | Phase 2 |

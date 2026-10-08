@@ -177,10 +177,10 @@ MainScreen (Control)
 | --- | --- |
 | `_ready()` | 应用显示模式 → `style_quality_slider()` → 填灵敏度游戏列表 → 恢复存档 → `AddGames()` → 绑定 `size_changed` |
 | `AddGames()` / `AddGames2D()` | 遍历 `Global.models3d/2d`，动态生成 `HBoxContainer[预览(300×300) + 按钮]`，按钮 `pressed` 绑定 `startTraining(bind(name))`；末尾统一调 `sync_mode_layout()` |
-| `sync_mode_layout(buttons)` | `await process_frame` 后按最宽文字统一按钮宽度（×1.1），并按 **左列实际高度**均分行高、按钮几乎撑满行高（上下各 12px），使左右两列等高对齐 |
+| `sync_mode_layout(buttons)` | `await process_frame` 后用**挂进场景树的探测按钮**测量 3D+2D 全部模式名、取统一宽度（×1.1，跨维度一致）；行高按**左列实际高度**均分且下限 300，按钮几乎撑满行高（上下各 12px），左右两列等高对齐；左列尺寸尚未就绪时下一帧重试 |
 | `_on_left_column_resized()` | 左列高度变化（字体异步加载 / 切语言 / 2D↔3D）时自动重跑 `sync_mode_layout()` |
 | `startTraining(type)` / `startTraining2D(type)` | 写 `Global.game_type`，切换场景；3D 额外 `Input.set_mouse_mode(CAPTURED)` |
-| `_on_play_pressed()` | 随机抽一个模式直接开始 |
+| `_on_play_pressed()` | 进入当前选中的模式（模式按钮为单选选中，默认选中第一个，不再随机、点击按钮也不直接进关卡） |
 | `_on_quality_slider_value_changed(v)` | `viewport.scaling_3d_scale = v` + 刷新标签 + 存档 |
 | `update_resolution_label()` | 显示"渲染缩放：W × H (N%)"（**注意：改的是 3D 渲染缩放，不是窗口大小**） |
 | `style_quality_slider()` | 代码内构造高对比 `StyleBoxFlat`（轨道 / 已填充区 / 滑块）与刻度颜色 |
@@ -429,8 +429,9 @@ godot --headless --path . --script res://tools/build_translations.gd
 ### 5.3 场景切换关系
 
 ```
-MainScreen ──Play/模式按钮──▶ World.tscn (3D)
-          ──模式按钮(2D)────▶ World2D.tscn (2D)
+MainScreen ──Play（进入 3D 选中模式）──▶ World.tscn (3D)
+          ──Play（进入 2D 选中模式）──▶ World2D.tscn (2D)
+          ──模式按钮 = 仅选中，不切场景
           ──Options────────▶ Options.tscn ──Back──▶ MainScreen
 World     ──Restart────────▶ reload_current_scene()
           ──Menu───────────▶ MainScreen.tscn

@@ -234,8 +234,19 @@ ok_button_text = "Open"
 file_mode = 0
 access = 2
 
-[node name="Back" type="Button" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
-layout_mode = 2
+[node name="Back" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -455.0
+offset_top = -175.0
+offset_right = -40.0
+offset_bottom = -50.0
+grow_horizontal = 0
+grow_vertical = 0
 theme = ExtResource("2_yemm7")
 text = "Back"
 
@@ -259,4 +270,4 @@ text = "Back"
 [connection signal="item_selected" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowLanguage/Language" to="." method="_on_language_item_selected"]
 [connection signal="item_selected" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowDisplay/Display" to="." method="_on_display_item_selected"]
 [connection signal="item_selected" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowWindowSize/WindowSize" to="." method="_on_window_size_item_selected"]
-[connection signal="pressed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/Back" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Back" to="." method="_on_back_pressed"]
