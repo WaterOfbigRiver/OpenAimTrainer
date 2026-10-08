@@ -1,0 +1,262 @@
+[gd_scene load_steps=4 format=3 uid="uid://cropshnueuiqr"]
+
+[ext_resource type="Script" path="res://scripts/ui/Options.gd" id="1_4ilr3"]
+[ext_resource type="Script" path="res://scripts/ui/Crosshair.gd" id="2_iu82h"]
+[ext_resource type="Theme" uid="uid://bi8v7ieepi4ny" path="res://assets/themes/theme.tres" id="2_yemm7"]
+
+[node name="Options" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_4ilr3")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/margin_left = 160
+theme_override_constants/margin_top = 120
+theme_override_constants/margin_right = 160
+theme_override_constants/margin_bottom = 120
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ScrollContainer/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 200
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 28
+
+[node name="CrosshairBox" type="VBoxContainer" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 24
+
+[node name="LabelCrosshair" type="Label" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox"]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Crosshair"
+uppercase = true
+
+[node name="Control" type="Control" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox"]
+custom_minimum_size = Vector2(220, 220)
+layout_mode = 2
+
+[node name="Crosshair" type="Control" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/Control"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+script = ExtResource("2_iu82h")
+
+[node name="Crosshair" type="CheckButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist"]]
+layout_mode = 2
+button_pressed = true
+text = "Crosshair"
+
+[node name="Outline" type="CheckButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+button_pressed = true
+text = "Outline"
+
+[node name="CrosshairInner" type="CheckButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+button_pressed = true
+text = "Crosshair inner"
+
+[node name="Dot" type="CheckButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Dot"
+
+[node name="DotSize" type="LineEdit" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist", "PutLabel"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "6"
+placeholder_text = "6"
+
+[node name="OutlineSize" type="LineEdit" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist", "PutLabel"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "2"
+placeholder_text = "2"
+
+[node name="CrosshairHeight" type="LineEdit" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist", "PutLabel"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "4"
+placeholder_text = "4"
+
+[node name="CrosshairWidth" type="LineEdit" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist", "PutLabel"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "12"
+placeholder_text = "12"
+
+[node name="CrosshairSpace" type="LineEdit" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist", "PutLabel"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "5"
+placeholder_text = "5"
+
+[node name="CrosshairColor" type="ColorPickerButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist", "PutLabel"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Crosshair color"
+color = Color(0, 1, 1, 1)
+
+[node name="OutlineColor" type="ColorPickerButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox" groups=["Persist", "PutLabel"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Outline color"
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="ScrollContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 28
+
+[node name="RowLanguage" type="HBoxContainer" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="LabelLanguage" type="Label" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowLanguage"]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Language"
+
+[node name="Language" type="OptionButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowLanguage" groups=["Persist"]]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_yemm7")
+
+[node name="RowDisplay" type="HBoxContainer" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="LabelDisplay" type="Label" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowDisplay"]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Display"
+
+[node name="Display" type="OptionButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowDisplay" groups=["Persist"]]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_yemm7")
+
+[node name="RowWindowSize" type="HBoxContainer" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="LabelWindowSize" type="Label" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowWindowSize"]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Window size"
+
+[node name="WindowSize" type="OptionButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowWindowSize" groups=["Persist"]]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_yemm7")
+
+[node name="DisplayHint" type="Label" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = ""
+
+[node name="LabelTarget" type="Label" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Target"
+uppercase = true
+
+[node name="TargetColor" type="ColorPickerButton" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2" groups=["Persist", "PutLabel"]]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Target color"
+color = Color(1, 1, 0, 1)
+edit_alpha = false
+
+[node name="ImportExport" type="Label" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "IMPORT / EXPORT SETTINGS"
+uppercase = true
+
+[node name="RowFiles" type="HBoxContainer" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="Export" type="Button" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowFiles"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_yemm7")
+text = "Export"
+
+[node name="Import" type="Button" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowFiles"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_yemm7")
+text = "Import"
+
+[node name="ExportFileDialog" type="FileDialog" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+initial_position = 2
+size = Vector2i(2483, 1500)
+access = 2
+
+[node name="ImportFileDialog" type="FileDialog" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+title = "Open a File"
+initial_position = 2
+size = Vector2i(2017, 1500)
+theme = ExtResource("2_yemm7")
+ok_button_text = "Open"
+file_mode = 0
+access = 2
+
+[node name="Back" type="Button" parent="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2"]
+layout_mode = 2
+theme = ExtResource("2_yemm7")
+text = "Back"
+
+[connection signal="refresh_crosshair" from="." to="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/Control/Crosshair" method="_on_options_refresh_crosshair"]
+[connection signal="toggled" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/Crosshair" to="." method="_on_crosshair_toggled"]
+[connection signal="toggled" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/Outline" to="." method="_on_outline_toggled"]
+[connection signal="toggled" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/CrosshairInner" to="." method="_on_crosshair_inner_toggled"]
+[connection signal="toggled" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/Dot" to="." method="_on_dot_toggled"]
+[connection signal="text_changed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/DotSize" to="." method="_on_dot_size_text_changed"]
+[connection signal="text_changed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/OutlineSize" to="." method="_on_outline_size_text_changed"]
+[connection signal="text_changed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/CrosshairHeight" to="." method="_on_crosshair_height_text_changed"]
+[connection signal="text_changed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/CrosshairWidth" to="." method="_on_crosshair_width_text_changed"]
+[connection signal="text_changed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/CrosshairSpace" to="." method="_on_crosshair_space_text_changed"]
+[connection signal="color_changed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/CrosshairColor" to="." method="_on_crosshair_color_color_changed"]
+[connection signal="color_changed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer/CrosshairBox/OutlineColor" to="." method="_on_outline_color_color_changed"]
+[connection signal="color_changed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/TargetColor" to="." method="_on_target_color_color_changed"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowFiles/Export" to="." method="_on_export_pressed"]
+[connection signal="file_selected" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/ExportFileDialog" to="." method="_on_export_file_dialog_file_selected"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowFiles/Import" to="." method="_on_import_pressed"]
+[connection signal="file_selected" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/ImportFileDialog" to="." method="_on_import_file_dialog_file_selected"]
+[connection signal="item_selected" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowLanguage/Language" to="." method="_on_language_item_selected"]
+[connection signal="item_selected" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowDisplay/Display" to="." method="_on_display_item_selected"]
+[connection signal="item_selected" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/RowWindowSize/WindowSize" to="." method="_on_window_size_item_selected"]
+[connection signal="pressed" from="ScrollContainer/MarginContainer/HBoxContainer/VBoxContainer2/Back" to="." method="_on_back_pressed"]
